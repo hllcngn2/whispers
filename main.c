@@ -32,17 +32,10 @@ initscr();
   refresh();
 
   int gamewinh =LINES>GWH? GWH: LINES,
-  gamewinw =LINES>GWW? GWW: COLS,
+  gamewinw =COLS>GWW? GWW: COLS,
   gamewiny =(LINES-gamewinh)/2,
   gamewinx =(COLS-gamewinw)/2;
 WINDOW* gamewin =newwin(gamewinh,gamewinw,gamewiny,gamewinx);
-  int talkmarginleft =8,
-  talkmarginbottom =2,
-  talkwinh =5,
-  talkwinw =gamewinw-talkmarginleft*2,
-  talkwiny =gamewinh-(talkwinh+talkmarginbottom),
-  talkwinx =talkmarginleft;
-WINDOW* talkwin =newwin(talkwinh,talkwinw,talkwiny,talkwinx);
   int invmarginright =2,
   invmargintop =2,
   invwinh =gamewinh-invmargintop*2,
@@ -51,6 +44,13 @@ WINDOW* talkwin =newwin(talkwinh,talkwinw,talkwiny,talkwinx);
   invwinx =gamewinx+gamewinw-invwinw+invmarginright;
 WINDOW* invwin =newwin(invwinh,invwinw,invwiny,invwinx);
 int inv_on =0;
+  int talkmarginleft =8,
+  talkmarginbottom =-1,
+  talkwinh =5,
+  talkwinw =gamewinw-talkmarginleft*2,
+  talkwiny =gamewiny+gamewinh-talkwinh-talkmarginbottom,
+  talkwinx =gamewinx+talkmarginleft;
+WINDOW* talkwin =newwin(talkwinh,talkwinw,talkwiny,talkwinx);
 
 Chunk* level =newchunk();
 
@@ -65,18 +65,18 @@ case K_INV:	if(!inv_on) inv_on =1;
 //case K_LEFT:	if(
 	default: break;}
 
-if(count==WHISP_DURATION){
+if(count==WHISP_INTERVAL+WHISP_DURATION){
 werase(talkwin); wrefresh(talkwin); count =0;}
 box(gamewin,0,0);
 mvwaddch(gamewin,gamewinh/2,gamewinw/2,'@');
 wrefresh(gamewin);
+if(count>=WHISP_INTERVAL){
+box(talkwin,0,0);
+wrefresh(talkwin);}
 if(inv_on){
 box(invwin,0,0);
 mvwprintw(invwin,1,2,"INVENTORY");
 wrefresh(invwin);}
-if(count<=WHISP_INTERVAL){
-box(talkwin,0,0);
-wrefresh(talkwin);}
 
 } while((c=getch())!=K_QUIT);
 freechunks(level);
