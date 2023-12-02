@@ -13,6 +13,7 @@
 #define WHISP_DURATION 5
 #define CHUNKH 60
 #define CHUNKW 140
+#define PLTFRMWMAX 25
 typedef struct Chunk {
 	struct Chunk* left;
 	struct Chunk* right;
@@ -22,6 +23,7 @@ typedef struct Chunk {
 } Chunk;
 Chunk* newchunk(void);
 void freechunks(Chunk* level);
+void populate(Chunk* chunk);
 
 
 int main(int ac, char** av){
@@ -53,11 +55,13 @@ int inv_on =0;
 WINDOW* talkwin =newwin(talkwinh,talkwinw,talkwiny,talkwinx);
 
 Chunk* level =newchunk();
+populate(level);
 
 char c =0;
-int count =0, jump =0;
+int frame =0, jump =0;
 //int posy =15, posx =40;
-do { count++;
+int camy =(CHUNKH-GWH)/2, camx =(CHUNKW-GWW)/2;
+do { frame++;
 
 switch(c){
 case K_INV:	if(!inv_on) inv_on =1;
@@ -65,12 +69,12 @@ case K_INV:	if(!inv_on) inv_on =1;
 //case K_LEFT:	if(
 	default: break;}
 
-if(count==WHISP_INTERVAL+WHISP_DURATION){
-werase(talkwin); wrefresh(talkwin); count =0;}
+if(frame==WHISP_INTERVAL+WHISP_DURATION){
+werase(talkwin); wrefresh(talkwin); frame =0;}
 box(gamewin,0,0);
 mvwaddch(gamewin,gamewinh/2,gamewinw/2,'@');
 wrefresh(gamewin);
-if(count>=WHISP_INTERVAL){
+if(frame>=WHISP_INTERVAL){
 box(talkwin,0,0);
 wrefresh(talkwin);}
 if(inv_on){
@@ -94,7 +98,7 @@ Chunk* newchunk(void){
 Chunk* new =(Chunk*)malloc(sizeof(Chunk));
 new->map =(char**)malloc(sizeof(char*)*CHUNKH);
 for(int i=0;i<CHUNKH;i++)
-	new->map[i] =(char*)malloc(CHUNKW);
+	new->map[i] =(char*)calloc(CHUNKW,1);
 new->left =NULL;
 new->right =NULL;
 new->top =NULL;
@@ -112,3 +116,59 @@ freechunks(level->right);
 freechunks(level->top);
 freechunks(level->bottom);
 free(level); return;}
+
+void populate(Chunk* chunk){
+printw("starting point\n"); getch();
+int n =rand()%(int)((float)CHUNKH*(float)CHUNKW*0.01);
+int nb=0; do{ nb++;
+int h =rand()%5;
+if(h==0||h==1||h==4)	h =1;
+else if(h==2)	h =2;
+else if(h==3)	h =2+rand()%4;
+//printw("h=%i\n",h); getch();
+int w =rand()%PLTFRMWMAX;
+if(!(w%2)) w++;
+//printw("w=%i\n",w); getch();
+char **platform =(char**)malloc(sizeof(char*)*(h+1));
+for(int i=0;i<h+1;i++)
+	platform[i] =(char*)calloc(sizeof(char*)*w,1);
+for(int i=0;i<w;i++) platform[0][i] ='_';
+platform[1][0] ='|';
+for(int i=1;i<w;i+=2){ platform[1][i] =' ';
+		platform[1][i+1] ='|';}
+if(h>=2) for(int i=0;i<w-2;i+=2)
+{
+//printw("i=%i\n",i); getch();
+	if(rand()%3){ platform[2][i] =' ';
+		platform[2][i+1] =' ';}
+}
+if(h>=3) for(int i=0;i<w-2;i+=2)
+	if(platform[2][i] && rand()%2){
+		platform[3][i] =' ';
+		platform[3][i+1] =' ';}
+if(h>=4) for(int i=0;i<w;i++)
+	if(platform[3][i] && rand()%2)
+		platform[4][i] =' ';
+if(h==5) for(int i=0;i<w;i++)
+	if(platform[4][i] && rand()%2)
+		platform[5][i] =' ';
+printw("middlepoint"); getch();
+int x, y;
+int viable, tries=0; do {
+	tries++;
+	viable =1;
+	y =rand()%CHUNKH;
+	x =rand()%CHUNKW;
+	if(y+h+1>=CHUNKH) viable =0;
+	if(x+w>=CHUNKW) viable =0;
+	if(viable) for(int i=0;i<h+1;i++) for(int j=0;j<w;j++)
+		if(chunk->map[y+i][x+j]) viable =0;
+printw("point3"); getch();
+} while(!viable && tries<42);
+if(viable) for(int i=0;i<h;i++) for(int j=0;j<w;j++)
+		chunk->map[y+i][x+j] =platform[i][j];
+for(int i=0;i<h;i++) free(platform[i]);
+free(platform);
+printw("endpoint"); getch();
+}while(nb<n);
+return;}
