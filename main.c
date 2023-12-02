@@ -14,6 +14,8 @@
 #define CHUNKH 60
 #define CHUNKW 140
 #define PLTFRMWMAX 25
+#define PLX(camx) camx+GWW/2
+#define PLY(camy) camy+GWH/2
 typedef struct Chunk {
 	struct Chunk* left;
 	struct Chunk* right;
@@ -59,7 +61,6 @@ populate(level);
 
 char c =0;
 int frame =0, jump =0;
-//int posy =15, posx =40;
 int camy =(CHUNKH-GWH)/2, camx =(CHUNKW-GWW)/2;
 do { frame++;
 
@@ -67,8 +68,17 @@ switch(c){
 case K_INV: if(!inv_on) inv_on =1;
 	else { inv_on =0;
 		werase(invwin); wrefresh(invwin); } break;
-//case K_LEFT:	if(
-	default: break;}
+case K_LEFT: if(!level->map[PLY(camy)][PLX(camx)-1]
+		|| level->map[PLY(camy)][PLX(camx)-1]=='_')
+		camx--; break;
+case K_RIGHT: if(!level->map[PLY(camy)][PLX(camx)+1]
+		|| level->map[PLY(camy)][PLX(camx)+1]=='_')
+		camx++; break;
+case K_JUMP:break;
+default: break;}
+
+if(!level->map[PLY(camy)][PLX(camx)])
+	camy++;
 
 if(frame==WHISP_INTERVAL+WHISP_DURATION){
 werase(talkwin); wrefresh(talkwin); frame =0;}
