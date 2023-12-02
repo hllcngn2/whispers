@@ -64,13 +64,19 @@ int camy =(CHUNKH-GWH)/2, camx =(CHUNKW-GWW)/2;
 do { frame++;
 
 switch(c){
-case K_INV:	if(!inv_on) inv_on =1;
-		else { inv_on =0; werase(invwin); wrefresh(invwin); } break;
+case K_INV: if(!inv_on) inv_on =1;
+	else { inv_on =0;
+		werase(invwin); wrefresh(invwin); } break;
 //case K_LEFT:	if(
 	default: break;}
 
 if(frame==WHISP_INTERVAL+WHISP_DURATION){
 werase(talkwin); wrefresh(talkwin); frame =0;}
+wmove(gamewin,0,0);
+for(int i=0;i<GWH;i++) for(int j=0;j<GWW;j++)
+	if(level->map[camy+i][camx+j])
+		waddch(gamewin,level->map[camy+i][camx+j]);
+	else waddch(gamewin,' ');
 box(gamewin,0,0);
 mvwaddch(gamewin,gamewinh/2,gamewinw/2,'@');
 wrefresh(gamewin);
@@ -118,17 +124,14 @@ freechunks(level->bottom);
 free(level); return;}
 
 void populate(Chunk* chunk){
-printw("starting point\n"); getch();
 int n =rand()%(int)((float)CHUNKH*(float)CHUNKW*0.01);
 int nb=0; do{ nb++;
 int h =rand()%5;
 if(h==0||h==1||h==4)	h =1;
 else if(h==2)	h =2;
 else if(h==3)	h =2+rand()%4;
-//printw("h=%i\n",h); getch();
 int w =rand()%PLTFRMWMAX;
 if(!(w%2)) w++;
-//printw("w=%i\n",w); getch();
 char **platform =(char**)malloc(sizeof(char*)*(h+1));
 for(int i=0;i<h+1;i++)
 	platform[i] =(char*)calloc(sizeof(char*)*w,1);
@@ -137,11 +140,8 @@ platform[1][0] ='|';
 for(int i=1;i<w;i+=2){ platform[1][i] =' ';
 		platform[1][i+1] ='|';}
 if(h>=2) for(int i=0;i<w-2;i+=2)
-{
-//printw("i=%i\n",i); getch();
 	if(rand()%3){ platform[2][i] =' ';
 		platform[2][i+1] =' ';}
-}
 if(h>=3) for(int i=0;i<w-2;i+=2)
 	if(platform[2][i] && rand()%2){
 		platform[3][i] =' ';
@@ -152,7 +152,6 @@ if(h>=4) for(int i=0;i<w;i++)
 if(h==5) for(int i=0;i<w;i++)
 	if(platform[4][i] && rand()%2)
 		platform[5][i] =' ';
-printw("middlepoint"); getch();
 int x, y;
 int viable, tries=0; do {
 	tries++;
@@ -163,12 +162,10 @@ int viable, tries=0; do {
 	if(x+w>=CHUNKW) viable =0;
 	if(viable) for(int i=0;i<h+1;i++) for(int j=0;j<w;j++)
 		if(chunk->map[y+i][x+j]) viable =0;
-printw("point3"); getch();
 } while(!viable && tries<42);
-if(viable) for(int i=0;i<h;i++) for(int j=0;j<w;j++)
+if(viable) for(int i=0;i<h+1;i++) for(int j=0;j<w;j++)
 		chunk->map[y+i][x+j] =platform[i][j];
 for(int i=0;i<h;i++) free(platform[i]);
 free(platform);
-printw("endpoint"); getch();
 }while(nb<n);
 return;}
