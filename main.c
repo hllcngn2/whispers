@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>//usleep
 //#include "whispers.h"
 #define GWH 30
 #define GWW 80
@@ -9,6 +10,7 @@
 #define K_JUMP	'w'
 #define K_LEFT	'a'
 #define K_RIGHT	'd'
+#define FRAMERATE 40
 #define WHISP_INTERVAL 10
 #define WHISP_DURATION 5
 #define CHUNKH 150
@@ -31,7 +33,7 @@ void populate(Chunk* chunk);
 int main(int ac, char** av){
 srand(time(NULL));
 initscr();
-  cbreak(); noecho();
+  cbreak(); noecho(); nodelay(stdscr,TRUE);
   curs_set(0); start_color();
   refresh();
 
@@ -59,9 +61,10 @@ WINDOW* talkwin =newwin(talkwinh,talkwinw,talkwiny,talkwinx);
 Chunk* level =newchunk();
 populate(level);
 
-char c =0;
-int frame =0, jump =0;
 int camy =(CHUNKH-GWH)/2, camx =(CHUNKW-GWW)/2;
+int frame =0, jump =0;
+clock_t start =clock(), end;
+char c =0;
 do { frame++;
 
 switch(c){
@@ -102,6 +105,9 @@ box(invwin,0,0);
 mvwprintw(invwin,1,2,"INVENTORY");
 wrefresh(invwin);}
 
+end =clock();
+usleep(1000000/40-(end-start));
+start =clock();
 } while((c=getch())!=K_QUIT);
 freechunks(level);
   delwin(gamewin); delwin(talkwin); delwin(invwin);
