@@ -10,7 +10,8 @@
 #define K_JUMP	'w'
 #define K_LEFT	'a'
 #define K_RIGHT	'd'
-#define FRAMERATE 40
+#define K_STOP	's'
+#define FRAMERATE 10
 #define WHISP_INTERVAL 10
 #define WHISP_DURATION 5
 #define CHUNKH 150
@@ -62,7 +63,7 @@ Chunk* level =newchunk();
 populate(level);
 
 int camy =(CHUNKH-GWH)/2, camx =(CHUNKW-GWW)/2;
-int frame =0, jump =0;
+int frame =0, jump =0, dir =0;
 clock_t start =clock(), end;
 char c =0;
 do { frame++;
@@ -71,15 +72,18 @@ switch(c){
 case K_INV: if(!inv_on) inv_on =1;
 	else { inv_on =0;
 		werase(invwin); wrefresh(invwin); } break;
-case K_LEFT:	if(!level->map[PLY(camy)][PLX(camx)-1]
-		|| level->map[PLY(camy)][PLX(camx)-1]=='_')
-		camx--;		break;
-case K_RIGHT:	if(!level->map[PLY(camy)][PLX(camx)+1]
-		|| level->map[PLY(camy)][PLX(camx)+1]=='_')
-		camx++;		break;
+case K_LEFT:	dir =-1; break;
+case K_RIGHT:	dir =1; break;
+case K_STOP:	dir =0; break;
 case K_JUMP:	if (jump<3) jump+=5;	break;
 default:	break;}
 
+if (dir==-1 && (!level->map[PLY(camy)][PLX(camx)-1]
+	|| level->map[PLY(camy)][PLX(camx)-1]=='_'))
+	camx--;
+if (dir==1 && (!level->map[PLY(camy)][PLX(camx)+1]
+	|| level->map[PLY(camy)][PLX(camx)+1]=='_'))
+	camx++;
 if (jump){
 	if (!level->map[PLY(camy-1)][PLX(camx)+1])
 		camy-=1;
@@ -106,7 +110,7 @@ mvwprintw(invwin,1,2,"INVENTORY");
 wrefresh(invwin);}
 
 end =clock();
-usleep(1000000/40-(end-start));
+usleep(1000000/FRAMERATE-(end-start));
 start =clock();
 } while((c=getch())!=K_QUIT);
 freechunks(level);
