@@ -1,0 +1,13 @@
+Whispers todo
+-multiple chunks level
+-cleaning it up
+
+borders of the larger level:
+"You have lost your way."
+(handle exception)
+
+if youre' bored:
+camera:
+player coordinates
+center camera on it
+just calculate offsets

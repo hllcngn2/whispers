@@ -11,8 +11,8 @@
 #define K_RIGHT	'd'
 #define WHISP_INTERVAL 10
 #define WHISP_DURATION 5
-#define CHUNKH 60
-#define CHUNKW 140
+#define CHUNKH 150
+#define CHUNKW 250
 #define PLTFRMWMAX 25
 #define PLX(camx) camx+GWW/2
 #define PLY(camy) camy+GWH/2
@@ -68,16 +68,20 @@ switch(c){
 case K_INV: if(!inv_on) inv_on =1;
 	else { inv_on =0;
 		werase(invwin); wrefresh(invwin); } break;
-case K_LEFT: if(!level->map[PLY(camy)][PLX(camx)-1]
+case K_LEFT:	if(!level->map[PLY(camy)][PLX(camx)-1]
 		|| level->map[PLY(camy)][PLX(camx)-1]=='_')
-		camx--; break;
-case K_RIGHT: if(!level->map[PLY(camy)][PLX(camx)+1]
+		camx--;		break;
+case K_RIGHT:	if(!level->map[PLY(camy)][PLX(camx)+1]
 		|| level->map[PLY(camy)][PLX(camx)+1]=='_')
-		camx++; break;
-case K_JUMP:break;
-default: break;}
+		camx++;		break;
+case K_JUMP:	if (jump<3) jump+=5;	break;
+default:	break;}
 
-if(!level->map[PLY(camy)][PLX(camx)])
+if (jump){
+	if (!level->map[PLY(camy-1)][PLX(camx)+1])
+		camy-=1;
+	jump--;}
+else if(!jump && !level->map[PLY(camy)][PLX(camx)])
 	camy++;
 
 if(frame==WHISP_INTERVAL+WHISP_DURATION){
@@ -103,13 +107,7 @@ freechunks(level);
   delwin(gamewin); delwin(talkwin); delwin(invwin);
 endwin(); return 0;}
 
-/*
-WINDOW* win;
-{ winx =x;
-  winy =y;
-  WINDOW* mywin =newwin();
-  win =mywin;}
-*/ 
+
 Chunk* newchunk(void){
 Chunk* new =(Chunk*)malloc(sizeof(Chunk));
 new->map =(char**)malloc(sizeof(char*)*CHUNKH);
