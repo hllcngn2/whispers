@@ -11,7 +11,7 @@
 #define K_LEFT	'a'
 #define K_RIGHT	'd'
 #define K_STOP	's'
-#define FRAMERATE 10
+#define FRAMERATE 9
 #define WHISP_INTERVAL 10
 #define WHISP_DURATION 5
 #define CHUNKH 150
@@ -30,6 +30,9 @@ Chunk* newchunk(void);
 void freechunks(Chunk* level);
 void populate(Chunk* chunk);
 
+char** get_map(void);
+int get_color(char**,int,int);
+
 
 int main(int ac, char** av){
 srand(time(NULL));
@@ -37,6 +40,11 @@ initscr();
   cbreak(); noecho(); nodelay(stdscr,TRUE);
   curs_set(0); start_color();
   refresh();
+init_pair(1, COLOR_WHITE, COLOR_BLACK);
+init_pair(5, COLOR_BLACK, 213); //pink
+init_pair(2, COLOR_BLACK, 99); //purple
+init_pair(3, COLOR_BLACK, 177); //pink in-between
+init_pair(4, COLOR_BLACK, 135); //purple in-between
 
   int gamewinh =LINES>GWH? GWH: LINES,
   gamewinw =COLS>GWW? GWW: COLS,
@@ -59,6 +67,7 @@ int inv_on =0;
   talkwinx =gamewinx+talkmarginleft;
 WINDOW* talkwin =newwin(talkwinh,talkwinw,talkwiny,talkwinx);
 
+char** cm =get_map();
 Chunk* level =newchunk();
 populate(level);
 
@@ -94,11 +103,23 @@ else if(!jump && !level->map[PLY(camy)][PLX(camx)])
 if(frame==WHISP_INTERVAL+WHISP_DURATION){
 werase(talkwin); wrefresh(talkwin); frame =0;}
 wmove(gamewin,0,0);
+
+
 for(int i=0;i<GWH;i++) for(int j=0;j<GWW;j++)
-	if(level->map[camy+i][camx+j]>10)
-		waddch(gamewin,level->map[camy+i][camx+j]);
-	else waddch(gamewin,' ');
+	if(!level->map[camy+i][camx+j]){
+		wattron(gamewin,COLOR_PAIR(get_color(cm,i,j)));
+		waddch(gamewin,' ');}
+	else if(level->map[camy+i][camx+j]==1){
+		wattron(gamewin,COLOR_PAIR(get_color(cm,i,j)));
+		waddch(gamewin,' ');}
+	else if(level->map[camy+i][camx+j]=='_'){
+		wattron(gamewin,COLOR_PAIR(get_color(cm,i,j)));
+		waddch(gamewin,' ');}
+	else {	wattron(gamewin,COLOR_PAIR(1));
+		mvwaddch(gamewin,i,j,level->map[camy+i][camx+j]);}
+wattron(gamewin,COLOR_PAIR(1));
 box(gamewin,0,0);
+wattron(gamewin,COLOR_PAIR(get_color(cm,gamewinh/2,gamewinw/2)));
 mvwaddch(gamewin,gamewinh/2,gamewinw/2,'@');
 wrefresh(gamewin);
 if(frame>=WHISP_INTERVAL){

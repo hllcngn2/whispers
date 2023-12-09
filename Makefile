@@ -1,2 +1,2 @@
 all:
-	gcc -oWhispers main.c -lncurses
+	gcc -oWhispers main.c drawsmallmap.c -lncurses
