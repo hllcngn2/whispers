@@ -1,10 +1,16 @@
 Whispers todo
 -multiple chunks level
 -cleaning it up
+-optimize drawing
 
-borders of the larger level:
+-borders of the larger level:
 "You have lost your way."
 (handle exception)
+
+small tweaks:
+-higher framerate
+-close dialog window after a time
+-add '|' randomly in second row of platforms
 
 if youre' bored:
 camera:
